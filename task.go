@@ -99,8 +99,6 @@ func SolveMatrix(matrix [][]Cell) [][]Cell {
 }
 
 func makeWay(originMatrix [][]Cell, startColumn int) [][]Cell {
-	maxMatrixNumber := 2
-	matrixNumber := 0
 	// Initialize starting position
 	initRow := 0
 	initColumn := startColumn
@@ -111,20 +109,12 @@ func makeWay(originMatrix [][]Cell, startColumn int) [][]Cell {
 		{0, 1},  // right
 	}
 	var solutions [][][]Cell
-	solutions = append(solutions, originMatrix)
 
 	// Recursive function to explore cells
-	var explore func(int, int, int)
-	explore = func(currentMatrixNumber, row, column int) {
-		matrix := solutions[matrixNumber]
-		matrixNumber += 1
-		// Unmark the current cell as visited
+	var explore func([][]Cell, int, int, int, int) [][]Cell
+	explore = func(matrix [][]Cell, row, column, prevRow, prevColumn int) [][]Cell {
 		matrix[row][column].IsMarked = false
-		solutions = append(solutions, DuplicateMatrix(matrix))
-		// step limitation
-		if matrixNumber > maxMatrixNumber {
-			return
-		}
+
 		// Explore adjacent cells
 		for _, dir := range directions {
 
@@ -135,25 +125,33 @@ func makeWay(originMatrix [][]Cell, startColumn int) [][]Cell {
 			if newRow < 0 || newRow >= len(matrix) || newColumn < 0 || newColumn >= len(matrix[0]) {
 				continue
 			}
-			// Check if the new position has unique value to int the unmarked row
-			if newRow == row {
-				isUnique := checkIfUniqueWithinUnmarked(matrix, newRow, newColumn)
 
-				if isUnique {
-					explore(0, newRow, newColumn)
-				}
+			// Check if the new position is not one of the previous positions
+			if matrix[newRow][newColumn].IsMarked == false {
+				continue
 			}
-			if newColumn == column {
-				isUnique := checkIfUniqueWithinUnmarked(matrix, newRow, newColumn)
 
-				if isUnique {
-					explore(0, newRow, newColumn)
-				}
+			// Check if the new position has unique value to int the unmarked row
+			isUnique := checkIfUniqueWithinUnmarked(matrix, newRow, newColumn)
+
+			if isUnique {
+
+				// create new dimension where it goes to the new position
+				newMatrix := DuplicateMatrix(matrix)
+				solutions = append(solutions, newMatrix)
+				//PrintMatrix(newMatrix)
+
+				// go to the new position and discover path
+				explore(newMatrix, newRow, newColumn, row, column)
+
+				// go next direction
+
 			}
 		}
+		return matrix
 	}
 
-	explore(0, initRow, initColumn)
+	explore(originMatrix, initRow, initColumn, -1, -1)
 
 	for _, solution := range solutions {
 		PrintMatrix(solution)
