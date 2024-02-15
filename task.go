@@ -148,7 +148,7 @@ func makeWay(originMatrix [][]Cell, initRow, initColumn int) [][]Cell {
 				}
 
 				// continue discovering path
-				//explore(discMatrix, row, column, dirIndex+1)
+				discMatrix = explore(discMatrix, row, column, dirIndex+1)
 
 				// go next direction
 			}
