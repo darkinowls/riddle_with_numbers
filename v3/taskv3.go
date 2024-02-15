@@ -86,26 +86,46 @@ func getExampleResult() [][]Cell {
 func SolveMatrix(matrix [][]Cell) [][]Cell {
 	//startingPoints := matrix[0]
 	//for i, _ := range startingPoints {
-	//	solution := makeWay(DuplicateMatrix(matrix), 2)
+	//	solution := makeWayDown(DuplicateMatrix(matrix), 2)
 	//	if solution != nil {
 	//		return solution
 	//	}
 	//}
-	solution := makeWay(DuplicateMatrix(matrix), 0, 4)
-	if solution != nil {
-		return solution
+
+	// make way down from the top
+	solutionsDown := makeWayDown(DuplicateMatrix(matrix), 0, 4)
+
+	// make way from the left to the right
+	solutionsRight := makeWayRight(DuplicateMatrix(matrix), 6, 0)
+
+	// combine both ways
+	// 1. find the intersection and filter by it
+	var filteredSolutions [][][]Cell
+	for _, solutionDown := range solutionsDown {
+		for _, solutionRight := range solutionsRight {
+			if checkIfHasIntersections(solutionDown, solutionRight) {
+				PrintMatrix(solutionRight)
+				filteredSolutions = append(filteredSolutions, solutionDown, solutionRight)
+			}
+		}
 	}
+
+	// 2. combine the ways and check if it doesn't break the rules
+	combineMatrixes(solutionsDown[0], solutionsRight[0])
+
 	return nil
 }
 
-func makeWay(originMatrix [][]Cell, initRow, initColumn int) [][]Cell {
+var directions = [4][2]int{
+	{-1, 0}, // top
+	{1, 0},  // bottom
+	{0, -1}, // left
+	{0, 1},  // right
+}
+
+func makeWayDown(originMatrix [][]Cell, initRow, initColumn int) [][][]Cell {
 	// Initialize starting position
-	directions := [][]int{
-		{-1, 0}, // top
-		{1, 0},  // bottom
-		{0, -1}, // left
-		{0, 1},  // right
-	}
+
 	var solutions [][][]Cell
 
 	// Recursive function to explore cells
@@ -143,12 +163,62 @@ func makeWay(originMatrix [][]Cell, initRow, initColumn int) [][]Cell {
 				// go to the new position and discover path
 				discMatrix = explore(newMatrix, newRow, newColumn, 0)
 
-				if discMatrix[8][4].IsMarked == false {
-					PrintMatrix(discMatrix)
-				}
+				// go next direction
+			}
+		}
+		return discMatrix
+	}
 
-				// continue discovering path
-				discMatrix = explore(discMatrix, row, column, dirIndex+1)
+	explore(originMatrix, initRow, initColumn, 0)
+
+	var result [][][]Cell
+	for _, solution := range solutions {
+		if checkIfTouchesBottom(solution) {
+			result = append(result, solution)
+		}
+	}
+	return result
+}
+
+func makeWayRight(originMatrix [][]Cell, initRow, initColumn int) [][][]Cell {
+	// Initialize starting position
+
+	var solutions [][][]Cell
+
+	// Recursive function to explore cells
+	var explore func([][]Cell, int, int, int) [][]Cell
+	explore = func(matrix [][]Cell, row, column, startingDirIndex int) [][]Cell {
+		matrix[row][column].IsMarked = false
+
+		discMatrix := matrix
+
+		// Explore adjacent cells
+		for dirIndex := startingDirIndex; dirIndex < 4; dirIndex++ {
+			dir := directions[dirIndex]
+			// create new matrix to go the direction
+			newRow, newColumn := row+dir[0], column+dir[1]
+
+			// Check if the new position is within bounds else skip
+			if newRow < 0 || newRow >= len(matrix) || newColumn < 0 || newColumn >= len(matrix[0]) {
+				continue
+			}
+
+			// Check if the new position is not one of the previous positions
+			if matrix[newRow][newColumn].IsMarked == false {
+				continue
+			}
+
+			// Check if the new position has unique value to int the unmarked row
+			isUnique := checkIfUniqueWithinUnmarked(matrix, newRow, newColumn)
+
+			if isUnique {
+
+				// create new dimension where it goes to the new position
+				newMatrix := DuplicateMatrix(matrix)
+				solutions = append(solutions, newMatrix)
+
+				// go to the new position and discover path
+				discMatrix = explore(newMatrix, newRow, newColumn, 0)
 
 				// go next direction
 			}
@@ -158,16 +228,29 @@ func makeWay(originMatrix [][]Cell, initRow, initColumn int) [][]Cell {
 
 	explore(originMatrix, initRow, initColumn, 0)
 
+	var result [][][]Cell
 	for _, solution := range solutions {
-		if checkIfTouchesAllTheWalls(solution) {
-			return solution
+		if checkIfTouchesRight(solution) {
+			result = append(result, solution)
 		}
 	}
-	return nil
+	return result
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Check matrix by itself
+
+func checkIfHasIntersections(m1 [][]Cell, m2 [][]Cell) bool {
+	for i := 0; i < len(m1); i++ {
+		for j := 0; j < len(m1[0]); j++ {
+			if m1[i][j].IsMarked == false && m2[i][j].IsMarked == false {
+				return true
+			}
+		}
+	}
+	return false
+
+}
 
 func checkIfUniqueWithinUnmarked(matrix [][]Cell, rowIndex int, columnIndex int) bool {
 	value := matrix[rowIndex][columnIndex].Value
@@ -221,6 +304,37 @@ func checkIfTouchesAllTheWalls(solution [][]Cell) bool {
 		return false
 	}
 	return true
+}
+
+func checkIfTouchesBottom(solution [][]Cell) bool {
+	hasBottom := false
+
+	hasBottom = checkSide(solution[len(solution)-1])
+	if hasBottom == false {
+		return false
+	}
+	return true
+}
+
+func checkIfTouchesRight(solution [][]Cell) bool {
+	hasRight := false
+	hasRight = checkSide(getMatrixColumn(solution, len(solution[0])-1))
+	if hasRight == false {
+		return false
+	}
+	return true
+}
+
+func combineMatrixes(matrix1 [][]Cell, matrix2 [][]Cell) [][]Cell {
+	combined := DuplicateMatrix(matrix1)
+	for i := 0; i < len(matrix1); i++ {
+		for j := 0; j < len(matrix1[0]); j++ {
+			if matrix2[i][j].IsMarked == false {
+				combined[i][j].IsMarked = false
+			}
+		}
+	}
+	return combined
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
