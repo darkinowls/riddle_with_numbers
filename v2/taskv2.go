@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 )
 
 // Розробіть алгоритм вирішення задачі та реалізуйте його у вигляді
@@ -13,6 +12,9 @@ import (
 // з'єднуватися одна з одною сторонами по горизонталі або по
 // вертиĸалі таĸ, щоб вийшов єдиний безперервний простір із
 // незафарбованих ĸлітин.
+
+// /////////////////////////////////////////////////////////////////////////////////////////////////
+// DATA STRUCTURE
 
 type Cell struct {
 	IsMarked bool
@@ -26,23 +28,22 @@ func NewCell(value int8) Cell {
 	}
 }
 
-// Алгритм
-// 1. Проходимися по матриці по рядкам. Якщо значення в рядку повторюється, то йде роздвоєння через рекурсію:
-// 		1) Нічого не змінюється
-// 		2) У всії інштх значеннях забирається маркування
-// 2. Проходимися по матриці по стовпцям. Те саме що й попередній крок
-// 3.
-//
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func main() {
-	initial := getTaskInit()
+	initial := getExampleInit()
 	result := SolveMatrix(initial)
-	if CompareMatrices(result, getExampleResult()) {
-		println("\nMatrices are IDENTICAL")
-		return
-	}
-	println("\nMatrices are DIFFERENT")
+	PrintMatrix(result)
+
+	//if CompareMatrices(result, getExampleResult()) {
+	//	println("\nMatrices are IDENTICAL")
+	//	return
+	//}
+	//println("\nMatrices are DIFFERENT")
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// INPUT / OUTPUT
 
 func getTaskInit() [][]Cell {
 	matrix := [][]Cell{
@@ -79,114 +80,225 @@ func getExampleResult() [][]Cell {
 	return matrix
 }
 
-func checkMatrixHasNoMarkedRowOrColumn(matrix [][]Cell) bool {
-	// Check for marked rows
-	for i := 0; i < len(matrix); i++ {
-		rowMarked := true
-		for j := 0; j < len(matrix[i]); j++ {
-			if !matrix[i][j].IsMarked {
-				rowMarked = false
-				break
-			}
-		}
-		if rowMarked {
-			return false // Found a marked row
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Solve by filtering
+
+func SolveMatrix(matrix [][]Cell) [][]Cell {
+	solutions := calculateAllPossibleMatrixSolutions(matrix)
+	filteredSolutions := filterMatrixesThatTouchAllTheWalls(solutions)
+	for _, s := range filteredSolutions {
+		PrintMatrix(s)
+		if iterateMatrixAndCountCells(s) == calculateUnmarkedCells(s) {
+			return s
 		}
 	}
-
-	// Check for marked columns
-	for j := 0; j < len(matrix[0]); j++ {
-		colMarked := true
-		for i := 0; i < len(matrix); i++ {
-			if !matrix[i][j].IsMarked {
-				colMarked = false
-				break
-			}
-		}
-		if colMarked {
-			return false // Found a marked column
-		}
-	}
-
-	return true // No marked rows or columns found
+	return nil
 }
 
-func toggleMarkedWhereValue(matrix [][]Cell, value int8) {
+func calculateAllPossibleMatrixSolutions(matrix [][]Cell) (solutions [][][]Cell) {
+
+	initMatrix := getInitMatrixWithMarks(matrix)
+
+	var iterateMatrix func(matrix [][]Cell, rowStartIndex, columnStartIndex int)
+	iterateMatrix = func(matrix [][]Cell, rowStartIndex, columnStartIndex int) {
+		for i := rowStartIndex; i < len(matrix); i++ {
+			for j := columnStartIndex; j < len(matrix[0]); j++ {
+
+				newMatrix := DuplicateMatrix(matrix)
+
+				if newMatrix[2][0].IsMarked == false {
+					// i never saw this print
+					PrintMatrix(newMatrix)
+				}
+
+				newMatrix = toggleCellsInCrossWithTheSameValue(newMatrix, i, j)
+
+				iterateMatrix(newMatrix, i, j+1)
+
+			}
+		}
+		solutions = append(solutions, matrix)
+
+	}
+	iterateMatrix(initMatrix, 0, 0)
+	return
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Check matrix by itself
+
+func getInitMatrixWithMarks(matrix [][]Cell) [][]Cell {
+	solution := DuplicateMatrix(matrix)
+	for i := 0; i < len(solution); i++ {
+		for j := 0; j < len(solution[0]); j++ {
+			if solution[i][j].IsMarked == true {
+				continue
+			}
+			switchOtherCellsInCrossWithTheSameValue(solution, i, j) // continue
+		}
+	}
+	return solution
+}
+
+func iterateMatrixAndCountCells(matrix [][]Cell) (count int) {
+
+	// find first unmarked
+	var startCol int
+	for i := 0; i < len(matrix[0]); i++ {
+		if matrix[0][i].IsMarked == false {
+			startCol = i
+			break
+		}
+	}
+
+	visited := make(map[[2]int]bool) // Keep track of visited cells to avoid revisiting
+	var iterate func(int, int)
+	iterate = func(row int, col int) {
+		if row < 0 || col < 0 || row >= len(matrix) || col >= len(matrix[0]) || visited[[2]int{row, col}] {
+			// Mark the cell as visited
+			visited[[2]int{row, col}] = true
+			// Perform operations on the cell here (e.g., count it)
+			count++
+			// Recursively call iterate for neighboring cells
+			iterate(row+1, col) // Right
+			iterate(row-1, col) // Left
+			iterate(row, col+1) // Down
+			iterate(row, col-1) // Up
+		}
+	}
+	iterate(0, startCol)
+	return
+}
+
+func calculateUnmarkedCells(matrix [][]Cell) (count int) {
 	for i := 0; i < len(matrix); i++ {
-		for j := 0; j < len(matrix[i]); j++ {
-			if matrix[i][j].Value == value {
-				matrix[i][j].IsMarked = !matrix[i][j].IsMarked
+		for j := 0; j < len(matrix[0]); j++ {
+			if matrix[i][j].IsMarked == false {
+				count++
+			}
+		}
+	}
+	return
+}
+
+func switchOtherCellsInCrossWithTheSameValue(matrix [][]Cell, rowIndex int, columnIndex int) {
+	value := matrix[rowIndex][columnIndex].Value
+	for i := 0; i < len(matrix); i++ {
+		for j := 0; j < len(matrix[0]); j++ {
+			if j == columnIndex || i == rowIndex {
+				if j == columnIndex && i == rowIndex {
+					continue
+				}
+				if matrix[i][j].Value == value {
+					matrix[i][j].IsMarked = true
+				}
 			}
 		}
 	}
 }
 
-func SolveMatrix(matrix [][]Cell, iStart int, jStart int, kStart int, lStart int) [][]Cell {
-	uniqueValuesMap := make(map[int8]bool)
+func toggleCellsInCrossWithTheSameValue(matrix [][]Cell, rowIndex int, columnIndex int) [][]Cell {
+	value := matrix[rowIndex][columnIndex].Value
+	for i := 0; i < len(matrix); i++ {
+		for j := 0; j < len(matrix[0]); j++ {
+			if i == rowIndex || j == columnIndex {
 
-	// Check rows
-	for i := iStart; i < len(matrix); i++ {
-		countMap1 := make(map[int8]int)
-		for j := jStart; j < len(matrix[i]); j++ {
-			if matrix[i][j].IsMarked {
-				continue
-			}
-			if countMap1[matrix[i][j].Value] > 0 {
-				matrix[i][j].IsMarked = true
-			} else {
-				uniqueValuesMap[matrix[i][j].Value] = true
-			}
-			countMap1[matrix[i][j].Value]++
-		}
-	}
+				//if matrix[0][2].IsMarked == false && matrix[2][0].IsMarked == false {
+				//	PrintMatrix(matrix)
+				//}
 
-	// Check columns
-	for k := kStart; k < len(matrix[0]); k++ {
-		countMap2 := make(map[int8]int)
-		for l := lStart; l < len(matrix); l++ {
-			if matrix[l][k].IsMarked {
-				continue
-			}
-			if countMap2[matrix[l][k].Value] > 0 {
-				matrix[l][k].IsMarked = true
-			} else {
-				uniqueValuesMap[matrix[l][k].Value] = true
-			}
-			countMap2[matrix[l][k].Value]++
-		}
-	}
-
-	if checkMatrixHasNoMarkedRowOrColumn(matrix) {
-		return matrix
-	}
-
-	var uniqueValues []int8
-	for key, _ := range uniqueValuesMap {
-		uniqueValues = append(uniqueValues, key)
-	}
-
-	// Calculate the total number of combinations
-	totalCombinations := int(math.Pow(2, float64(len(uniqueValues))))
-
-	for i := 0; i < totalCombinations; i++ {
-		// Toggle values to have unique combinations
-		for j, value := range uniqueValues {
-			if (i>>j)&1 == 1 { // Check if jth bit is set in i
-				toggleMarkedWhereValue(matrix, value)
+				if i == rowIndex && j == columnIndex {
+					matrix[i][j].IsMarked = false // itself in the cross
+				} else if matrix[i][j].Value == value {
+					matrix[i][j].IsMarked = true // others in the cross
+				}
 			}
 		}
-
-		printMatrix(matrix)
-
-		if i == totalCombinations-1 || checkMatrixHasNoMarkedRowOrColumn(matrix) {
-			return matrix
-		}
 	}
-
 	return matrix
 }
 
-func printMatrix(matrix [][]Cell) {
+func checkIfUniqueWithinUnmarked(matrix [][]Cell, rowIndex int, columnIndex int) bool {
+	value := matrix[rowIndex][columnIndex].Value
+	for i := 0; i < len(matrix); i++ {
+		for j := 0; j < len(matrix[0]); j++ {
+			if j == columnIndex || i == rowIndex {
+
+				if j == columnIndex && i == rowIndex {
+					continue
+				}
+
+				if matrix[i][j].Value == value && matrix[i][j].IsMarked == false {
+					return false
+				}
+
+			}
+		}
+	}
+	return true
+}
+
+func getMatrixColumn(matrix [][]Cell, columnNumber int) (firstColumn []Cell) {
+	for i := 0; i < len(matrix); i++ {
+		firstColumn = append(firstColumn, matrix[i][columnNumber])
+	}
+	return
+}
+
+func checkSide(solution []Cell) bool {
+	for _, v := range solution {
+		if v.IsMarked == false {
+			return true
+		}
+	}
+	return false
+}
+
+func filterMatrixesThatTouchAllTheWalls(matrixes [][][]Cell) (filteredMatrixes [][][]Cell) {
+	for _, m := range matrixes {
+		if checkIfTouchesAllTheWalls(m) {
+			filteredMatrixes = append(filteredMatrixes, m)
+		}
+	}
+	return
+}
+
+func checkIfTouchesAllTheWalls(solution [][]Cell) bool {
+	hasLeft, hasRight, hasBottom := false, false, false
+
+	hasBottom = checkSide(solution[len(solution)-1])
+	if hasBottom == false {
+		return false
+	}
+	hasLeft = checkSide(getMatrixColumn(solution, 0))
+	if hasLeft == false {
+		return false
+	}
+	hasRight = checkSide(getMatrixColumn(solution, len(solution[0])-1))
+	if hasRight == false {
+		return false
+	}
+	return true
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// Utils
+
+func DuplicateMatrix(matrix [][]Cell) [][]Cell {
+	n := len(matrix)
+	m := len(matrix[0])
+	duplicate := make([][]Cell, n)
+	data := make([]Cell, n*m)
+	for i := range matrix {
+		start := i * m
+		end := start + m
+		duplicate[i] = data[start:end:end]
+		copy(duplicate[i], matrix[i])
+	}
+	return duplicate
+}
+
+func PrintMatrix(matrix [][]Cell) {
 	println()
 	for _, row := range matrix {
 		for _, cell := range row {
