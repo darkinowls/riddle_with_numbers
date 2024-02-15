@@ -31,14 +31,15 @@ func NewCell(value int8) Cell {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func main() {
-	initial := getExampleInit()
+	initial := getTaskInit()
 	result := SolveMatrix(initial)
-	println(result)
-	if CompareMatrices(result, getExampleResult()) {
-		println("\nMatrices are IDENTICAL")
-		return
-	}
-	println("\nMatrices are DIFFERENT")
+	PrintMatrix(result)
+
+	//if CompareMatrices(result, getExampleResult()) {
+	//	println("\nMatrices are IDENTICAL")
+	//	return
+	//}
+	//println("\nMatrices are DIFFERENT")
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,23 +86,20 @@ func getExampleResult() [][]Cell {
 func SolveMatrix(matrix [][]Cell) [][]Cell {
 	//startingPoints := matrix[0]
 	//for i, _ := range startingPoints {
-	//	solution := makeWay(DuplicateMatrix(matrix), i)
+	//	solution := makeWay(DuplicateMatrix(matrix), 2)
 	//	if solution != nil {
 	//		return solution
 	//	}
 	//}
-
-	solution := makeWay(DuplicateMatrix(matrix), 1)
+	solution := makeWay(DuplicateMatrix(matrix), 0, 4)
 	if solution != nil {
 		return solution
 	}
 	return nil
 }
 
-func makeWay(originMatrix [][]Cell, startColumn int) [][]Cell {
+func makeWay(originMatrix [][]Cell, initRow, initColumn int) [][]Cell {
 	// Initialize starting position
-	initRow := 0
-	initColumn := startColumn
 	directions := [][]int{
 		{-1, 0}, // top
 		{1, 0},  // bottom
@@ -111,16 +109,18 @@ func makeWay(originMatrix [][]Cell, startColumn int) [][]Cell {
 	var solutions [][][]Cell
 
 	// Recursive function to explore cells
-	var explore func([][]Cell, int, int, int, int) [][]Cell
-	explore = func(matrix [][]Cell, row, column, prevRow, prevColumn int) [][]Cell {
+	var explore func([][]Cell, int, int, int) [][]Cell
+	explore = func(matrix [][]Cell, row, column, startingDirIndex int) [][]Cell {
 		matrix[row][column].IsMarked = false
 
+		discMatrix := matrix
+
 		// Explore adjacent cells
-		for _, dir := range directions {
-
+		for dirIndex := startingDirIndex; dirIndex < 4; dirIndex++ {
+			dir := directions[dirIndex]
 			// create new matrix to go the direction
-
 			newRow, newColumn := row+dir[0], column+dir[1]
+
 			// Check if the new position is within bounds else skip
 			if newRow < 0 || newRow >= len(matrix) || newColumn < 0 || newColumn >= len(matrix[0]) {
 				continue
@@ -139,22 +139,26 @@ func makeWay(originMatrix [][]Cell, startColumn int) [][]Cell {
 				// create new dimension where it goes to the new position
 				newMatrix := DuplicateMatrix(matrix)
 				solutions = append(solutions, newMatrix)
-				//PrintMatrix(newMatrix)
 
 				// go to the new position and discover path
-				explore(newMatrix, newRow, newColumn, row, column)
+				discMatrix = explore(newMatrix, newRow, newColumn, 0)
+
+				if discMatrix[8][4].IsMarked == false {
+					PrintMatrix(discMatrix)
+				}
+
+				// continue discovering path
+				//explore(discMatrix, row, column, dirIndex+1)
 
 				// go next direction
-
 			}
 		}
-		return matrix
+		return discMatrix
 	}
 
-	explore(originMatrix, initRow, initColumn, -1, -1)
+	explore(originMatrix, initRow, initColumn, 0)
 
 	for _, solution := range solutions {
-		PrintMatrix(solution)
 		if checkIfTouchesAllTheWalls(solution) {
 			return solution
 		}
