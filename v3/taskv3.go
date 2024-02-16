@@ -81,40 +81,43 @@ func getExampleResult() [][]Cell {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Solve by pathfinding
+// Solve by pathfinding and intersection
 
 func SolveMatrix(matrix [][]Cell) [][]Cell {
 	startingPointsDown := len(matrix[0])
 	startingPointsRight := len(matrix)
 
+	var solutionsDown [][][]Cell
+	var solutionsRight [][][]Cell
+
+	// make way down from the top
 	for i := 0; i < startingPointsDown; i++ {
-		for j := 0; j < startingPointsRight; j++ {
-			// make way down from the top
-			solutionsDown := makeWayDown(DuplicateMatrix(matrix), 0, i)
+		solutionsDown = append(solutionsDown, makeWayDown(DuplicateMatrix(matrix), 0, i)...)
+	}
 
-			// make way from the left to the right
-			solutionsRight := makeWayRight(DuplicateMatrix(matrix), j, 0)
+	// make way from the left to the right
+	for j := 0; j < startingPointsRight; j++ {
+		solutionsRight = append(solutionsRight, makeWayRight(DuplicateMatrix(matrix), j, 0)...)
+	}
 
-			// combine both ways
-			// 1. find the intersection and filter by it
-			var filteredSolutions [][][]Cell
-			for _, solutionDown := range solutionsDown {
-				for _, solutionRight := range solutionsRight {
-					if checkIfHasIntersections(solutionDown, solutionRight) {
-						filteredSolutions = append(filteredSolutions, solutionDown, solutionRight)
-					}
-				}
+	// combine both ways
+	// 1. find the intersection and filter by it
+	var filteredSolutions [][][]Cell
+	for _, solutionDown := range solutionsDown {
+		for _, solutionRight := range solutionsRight {
+			if checkIfHasIntersections(solutionDown, solutionRight) {
+
+				filteredSolutions = append(filteredSolutions, solutionDown, solutionRight)
 			}
+		}
+	}
 
-			// 2. combine the ways and check if it doesn't break the rules
-
-			for _, solutionDown := range solutionsDown {
-				for _, solutionRight := range solutionsRight {
-					combined := combineMatrixes(solutionDown, solutionRight)
-					if iterateMatrixAndCheckIfGood(combined) {
-						return combined
-					}
-				}
+	// 2. combine the ways and check if it doesn't break the rules
+	for _, solutionDown := range solutionsDown {
+		for _, solutionRight := range solutionsRight {
+			combined := combineMatrixes(solutionDown, solutionRight)
+			if iterateMatrixAndCheckIfGood(combined) {
+				return combined
 			}
 		}
 	}
