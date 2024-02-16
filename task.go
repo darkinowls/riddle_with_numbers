@@ -203,7 +203,8 @@ func iterateMatrixAndCheckIfGood(matrix [][]Cell) bool {
 	visited := make(map[[2]int]bool) // Keep track of visited cells to avoid revisiting
 	var iterate func(int, int)
 	iterate = func(row int, col int) {
-		if row < 0 || col < 0 || row >= len(matrix) || col >= len(matrix[0]) || visited[[2]int{row, col}] || matrix[row][col].IsMarked == true {
+		if row < 0 || col < 0 || row >= len(matrix) || col >= len(matrix[0]) ||
+			visited[[2]int{row, col}] || matrix[row][col].IsMarked == true {
 			return
 		}
 		// Mark the cell as visited
