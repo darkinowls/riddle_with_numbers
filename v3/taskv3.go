@@ -84,34 +84,40 @@ func getExampleResult() [][]Cell {
 // Solve by pathfinding
 
 func SolveMatrix(matrix [][]Cell) [][]Cell {
-	//startingPoints := matrix[0]
-	//for i, _ := range startingPoints {
-	//	solution := makeWayDown(DuplicateMatrix(matrix), 2)
-	//	if solution != nil {
-	//		return solution
-	//	}
-	//}
+	startingPointsDown := len(matrix[0])
+	startingPointsRight := len(matrix)
 
-	// make way down from the top
-	solutionsDown := makeWayDown(DuplicateMatrix(matrix), 0, 4)
+	for i := 0; i < startingPointsDown; i++ {
+		for j := 0; j < startingPointsRight; j++ {
+			// make way down from the top
+			solutionsDown := makeWayDown(DuplicateMatrix(matrix), 0, i)
 
-	// make way from the left to the right
-	solutionsRight := makeWayRight(DuplicateMatrix(matrix), 6, 0)
+			// make way from the left to the right
+			solutionsRight := makeWayRight(DuplicateMatrix(matrix), j, 0)
 
-	// combine both ways
-	// 1. find the intersection and filter by it
-	var filteredSolutions [][][]Cell
-	for _, solutionDown := range solutionsDown {
-		for _, solutionRight := range solutionsRight {
-			if checkIfHasIntersections(solutionDown, solutionRight) {
-				PrintMatrix(solutionRight)
-				filteredSolutions = append(filteredSolutions, solutionDown, solutionRight)
+			// combine both ways
+			// 1. find the intersection and filter by it
+			var filteredSolutions [][][]Cell
+			for _, solutionDown := range solutionsDown {
+				for _, solutionRight := range solutionsRight {
+					if checkIfHasIntersections(solutionDown, solutionRight) {
+						filteredSolutions = append(filteredSolutions, solutionDown, solutionRight)
+					}
+				}
+			}
+
+			// 2. combine the ways and check if it doesn't break the rules
+
+			for _, solutionDown := range solutionsDown {
+				for _, solutionRight := range solutionsRight {
+					combined := combineMatrixes(solutionDown, solutionRight)
+					if iterateMatrixAndCheckIfGood(combined) {
+						return combined
+					}
+				}
 			}
 		}
 	}
-
-	// 2. combine the ways and check if it doesn't break the rules
-	combineMatrixes(solutionsDown[0], solutionsRight[0])
 
 	return nil
 }
@@ -252,6 +258,42 @@ func checkIfHasIntersections(m1 [][]Cell, m2 [][]Cell) bool {
 
 }
 
+func iterateMatrixAndCheckIfGood(matrix [][]Cell) bool {
+
+	// find first unmarked
+	var startCol int
+	for i := 0; i < len(matrix[0]); i++ {
+		if matrix[0][i].IsMarked == false {
+			startCol = i
+			break
+		}
+	}
+
+	isGood := true
+	visited := make(map[[2]int]bool) // Keep track of visited cells to avoid revisiting
+	var iterate func(int, int)
+	iterate = func(row int, col int) {
+		if row < 0 || col < 0 || row >= len(matrix) || col >= len(matrix[0]) || visited[[2]int{row, col}] || matrix[row][col].IsMarked == true {
+			return
+		}
+		// Mark the cell as visited
+		visited[[2]int{row, col}] = true
+		// Perform check operation
+		if checkIfUniqueWithinUnmarked(matrix, row, col) == false {
+			isGood = false
+			return
+		}
+		// Recursively call iterate for neighboring cells
+		iterate(row+1, col) // Right
+		iterate(row-1, col) // Left
+		iterate(row, col+1) // Down
+		iterate(row, col-1) // Up
+
+	}
+	iterate(0, startCol)
+	return isGood
+}
+
 func checkIfUniqueWithinUnmarked(matrix [][]Cell, rowIndex int, columnIndex int) bool {
 	value := matrix[rowIndex][columnIndex].Value
 	for i := 0; i < len(matrix); i++ {
@@ -286,24 +328,6 @@ func checkSide(solution []Cell) bool {
 		}
 	}
 	return false
-}
-
-func checkIfTouchesAllTheWalls(solution [][]Cell) bool {
-	hasLeft, hasRight, hasBottom := false, false, false
-
-	hasBottom = checkSide(solution[len(solution)-1])
-	if hasBottom == false {
-		return false
-	}
-	hasLeft = checkSide(getMatrixColumn(solution, 0))
-	if hasLeft == false {
-		return false
-	}
-	hasRight = checkSide(getMatrixColumn(solution, len(solution[0])-1))
-	if hasRight == false {
-		return false
-	}
-	return true
 }
 
 func checkIfTouchesBottom(solution [][]Cell) bool {
