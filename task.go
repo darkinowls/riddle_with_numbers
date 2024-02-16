@@ -86,38 +86,23 @@ func getExampleResult() [][]Cell {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// Solve by pathfinding and intersection
+// Solve by pathfinding and combining 2 paths
 
 func SolveMatrix(matrix [][]Cell) [][]Cell {
-	startingPointsDown := len(matrix[0])
-	startingPointsRight := len(matrix)
-
-	var solutionsDown [][][]Cell
-	var solutionsRight [][][]Cell
 
 	// make way down from the top
-	for i := 0; i < startingPointsDown; i++ {
+	var solutionsDown [][][]Cell
+	for i := 0; i < len(matrix[0]); i++ {
 		solutionsDown = append(solutionsDown, makeWayDown(DuplicateMatrix(matrix), 0, i)...)
 	}
 
 	// make way from the left to the right
-	for j := 0; j < startingPointsRight; j++ {
-		solutionsRight = append(solutionsRight, makeWayRight(DuplicateMatrix(matrix), j, 0)...)
+	var solutionsRight [][][]Cell
+	for i := 0; i < len(matrix); i++ {
+		solutionsRight = append(solutionsRight, makeWayRight(DuplicateMatrix(matrix), i, 0)...)
 	}
 
-	// combine both ways
-	// 1. find the intersection and filter by it
-	var filteredSolutions [][][]Cell
-	for _, solutionDown := range solutionsDown {
-		for _, solutionRight := range solutionsRight {
-			if checkIfHasIntersections(solutionDown, solutionRight) {
-
-				filteredSolutions = append(filteredSolutions, solutionDown, solutionRight)
-			}
-		}
-	}
-
-	// 2. combine the ways and check if it doesn't break the rules
+	// combine the ways and check if it doesn't break the rules
 	for _, solutionDown := range solutionsDown {
 		for _, solutionRight := range solutionsRight {
 			combined := combineMatrixes(solutionDown, solutionRight)
@@ -130,6 +115,26 @@ func SolveMatrix(matrix [][]Cell) [][]Cell {
 	return nil
 }
 
+func makeWayDown(originMatrix [][]Cell, initRow, initColumn int) (result [][][]Cell) {
+	solutions := exploreMatrix(originMatrix, initRow, initColumn)
+	for _, solution := range solutions {
+		if checkIfTouchesBottomWall(solution) {
+			result = append(result, solution)
+		}
+	}
+	return
+}
+
+func makeWayRight(originMatrix [][]Cell, initRow, initColumn int) (result [][][]Cell) {
+	solutions := exploreMatrix(originMatrix, initRow, initColumn)
+	for _, solution := range solutions {
+		if checkIfTouchesRightWall(solution) {
+			result = append(result, solution)
+		}
+	}
+	return
+}
+
 var directions = [4][2]int{
 	{-1, 0}, // top
 	{1, 0},  // bottom
@@ -137,20 +142,14 @@ var directions = [4][2]int{
 	{0, 1},  // right
 }
 
-func makeWayDown(originMatrix [][]Cell, initRow, initColumn int) [][][]Cell {
-	// Initialize starting position
-
-	var solutions [][][]Cell
-
+func exploreMatrix(matrix [][]Cell, row, column int) (solutions [][][]Cell) {
 	// Recursive function to explore cells
-	var explore func([][]Cell, int, int, int) [][]Cell
-	explore = func(matrix [][]Cell, row, column, startingDirIndex int) [][]Cell {
+	var explore func([][]Cell, int, int)
+	explore = func(matrix [][]Cell, row, column int) {
 		matrix[row][column].IsMarked = false
 
-		discMatrix := matrix
-
 		// Explore adjacent cells
-		for dirIndex := startingDirIndex; dirIndex < 4; dirIndex++ {
+		for dirIndex := 0; dirIndex < 4; dirIndex++ {
 			dir := directions[dirIndex]
 			// create new matrix to go the direction
 			newRow, newColumn := row+dir[0], column+dir[1]
@@ -175,96 +174,19 @@ func makeWayDown(originMatrix [][]Cell, initRow, initColumn int) [][][]Cell {
 				solutions = append(solutions, newMatrix)
 
 				// go to the new position and discover path
-				discMatrix = explore(newMatrix, newRow, newColumn, 0)
+				explore(newMatrix, newRow, newColumn)
 
 				// go next direction
 			}
 		}
-		return discMatrix
 	}
-
-	explore(originMatrix, initRow, initColumn, 0)
-
-	var result [][][]Cell
-	for _, solution := range solutions {
-		if checkIfTouchesBottom(solution) {
-			result = append(result, solution)
-		}
-	}
-	return result
-}
-
-func makeWayRight(originMatrix [][]Cell, initRow, initColumn int) [][][]Cell {
-	// Initialize starting position
-
-	var solutions [][][]Cell
-
-	// Recursive function to explore cells
-	var explore func([][]Cell, int, int, int) [][]Cell
-	explore = func(matrix [][]Cell, row, column, startingDirIndex int) [][]Cell {
-		matrix[row][column].IsMarked = false
-
-		discMatrix := matrix
-
-		// Explore adjacent cells
-		for dirIndex := startingDirIndex; dirIndex < 4; dirIndex++ {
-			dir := directions[dirIndex]
-			// create new matrix to go the direction
-			newRow, newColumn := row+dir[0], column+dir[1]
-
-			// Check if the new position is within bounds else skip
-			if newRow < 0 || newRow >= len(matrix) || newColumn < 0 || newColumn >= len(matrix[0]) {
-				continue
-			}
-
-			// Check if the new position is not one of the previous positions
-			if matrix[newRow][newColumn].IsMarked == false {
-				continue
-			}
-
-			// Check if the new position has unique value to int the unmarked row
-			isUnique := checkIfUniqueWithinUnmarked(matrix, newRow, newColumn)
-
-			if isUnique {
-
-				// create new dimension where it goes to the new position
-				newMatrix := DuplicateMatrix(matrix)
-				solutions = append(solutions, newMatrix)
-
-				// go to the new position and discover path
-				discMatrix = explore(newMatrix, newRow, newColumn, 0)
-
-				// go next direction
-			}
-		}
-		return discMatrix
-	}
-
-	explore(originMatrix, initRow, initColumn, 0)
-
-	var result [][][]Cell
-	for _, solution := range solutions {
-		if checkIfTouchesRight(solution) {
-			result = append(result, solution)
-		}
-	}
-	return result
+	// start recursion
+	explore(matrix, row, column)
+	return
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Check matrix by itself
-
-func checkIfHasIntersections(m1 [][]Cell, m2 [][]Cell) bool {
-	for i := 0; i < len(m1); i++ {
-		for j := 0; j < len(m1[0]); j++ {
-			if m1[i][j].IsMarked == false && m2[i][j].IsMarked == false {
-				return true
-			}
-		}
-	}
-	return false
-
-}
 
 func iterateMatrixAndCheckIfGood(matrix [][]Cell) bool {
 
@@ -338,7 +260,7 @@ func checkSide(solution []Cell) bool {
 	return false
 }
 
-func checkIfTouchesBottom(solution [][]Cell) bool {
+func checkIfTouchesBottomWall(solution [][]Cell) bool {
 	hasBottom := false
 
 	hasBottom = checkSide(solution[len(solution)-1])
@@ -348,7 +270,7 @@ func checkIfTouchesBottom(solution [][]Cell) bool {
 	return true
 }
 
-func checkIfTouchesRight(solution [][]Cell) bool {
+func checkIfTouchesRightWall(solution [][]Cell) bool {
 	hasRight := false
 	hasRight = checkSide(getMatrixColumn(solution, len(solution[0])-1))
 	if hasRight == false {
