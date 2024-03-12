@@ -39,9 +39,6 @@ const docTemplate = `{
         "/solution": {
             "get": {
                 "description": "get next solution",
-                "produces": [
-                    "application/json"
-                ],
                 "summary": "get next solution",
                 "operationId": "get-next-solution",
                 "responses": {
@@ -90,15 +87,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "solved matrix",
+                        "description": "number of solutions",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/riddle.Cell"
-                                }
-                            }
+                            "type": "integer"
                         }
                     }
                 }

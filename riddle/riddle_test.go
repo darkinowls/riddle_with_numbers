@@ -243,3 +243,9 @@ func TestValidateInputMatrix(t *testing.T) {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 }
+
+func TestGetExampleResult(t *testing.T) {
+	matrix := getTaskInit()
+	solvedMatrix := SolveMatrix(matrix)
+	assert.True(t, len(solvedMatrix) == 1)
+}

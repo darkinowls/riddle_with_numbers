@@ -27,8 +27,6 @@ paths:
     get:
       description: get next solution
       operationId: get-next-solution
-      produces:
-      - application/json
       responses:
         "200":
           description: solved matrix
@@ -60,12 +58,8 @@ paths:
       - application/json
       responses:
         "200":
-          description: solved matrix
+          description: number of solutions
           schema:
-            items:
-              items:
-                $ref: '#/definitions/riddle.Cell'
-              type: array
-            type: array
+            type: integer
       summary: solve riddle
 swagger: "2.0"

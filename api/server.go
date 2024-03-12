@@ -21,8 +21,8 @@ func NewServer() *Server {
 func buildRoutes(r *gin.Engine) {
 	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("ping", checkIfAlive)
-	r.POST("solve", solveRiddle)
 	r.GET("solution", getResults)
+	r.POST("solve", solveRiddle)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,13 +42,27 @@ func checkIfAlive(c *gin.Context) {
 
 var results [][][]riddle.Cell
 
+// @Summary get next solution
+// @Description get next solution
+// @ID get-next-solution
+// @Success 200 {object} [][]riddle.Cell  "solved matrix"
+// @Router /solution [get]
+func getResults(c *gin.Context) {
+	if len(results) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "no results"})
+		return
+	}
+	c.JSON(http.StatusOK, (results)[0])
+	results = results[1:]
+}
+
 // @Summary solve riddle
 // @Description solve riddle
 // @ID solve-riddle
 // @Accept json
 // @Produce json
 // @Param matrix body [][]int true "matrix"
-// @Success 200 {object} [][]riddle.Cell "solved matrix"
+// @Success 200 {integer} int "number of solutions"
 // @Router /solve [post]
 func solveRiddle(c *gin.Context) {
 	var matrix [][]int
@@ -65,19 +79,4 @@ func solveRiddle(c *gin.Context) {
 	TranslateToCells := riddle.TranslateToCells(matrix)
 	results = riddle.SolveMatrix(TranslateToCells)
 	c.JSON(http.StatusOK, len(results))
-}
-
-// @Summary get next solution
-// @Description get next solution
-// @ID get-next-solution
-// @Produce json
-// @Success 200 {object} [][]riddle.Cell "solved matrix"
-// @Router /solution [get]
-func getResults(c *gin.Context) {
-	if len(results) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "no results"})
-		return
-	}
-	c.JSON(http.StatusOK, (results)[0])
-	results = results[1:]
 }
