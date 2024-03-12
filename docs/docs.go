@@ -36,6 +36,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/solution": {
+            "get": {
+                "description": "get next solution",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "get next solution",
+                "operationId": "get-next-solution",
+                "responses": {
+                    "200": {
+                        "description": "solved matrix",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/riddle.Cell"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/solve": {
             "post": {
                 "description": "solve riddle",
@@ -85,10 +109,10 @@ const docTemplate = `{
         "riddle.Cell": {
             "type": "object",
             "properties": {
-                "isMarked": {
+                "IsMarked": {
                     "type": "boolean"
                 },
-                "value": {
+                "Value": {
                     "type": "integer"
                 }
             }

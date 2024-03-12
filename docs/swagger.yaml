@@ -1,9 +1,9 @@
 definitions:
   riddle.Cell:
     properties:
-      isMarked:
+      IsMarked:
         type: boolean
-      value:
+      Value:
         type: integer
     type: object
 info:
@@ -23,6 +23,22 @@ paths:
           schema:
             type: string
       summary: ping example
+  /solution:
+    get:
+      description: get next solution
+      operationId: get-next-solution
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: solved matrix
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/riddle.Cell'
+              type: array
+            type: array
+      summary: get next solution
   /solve:
     post:
       consumes:

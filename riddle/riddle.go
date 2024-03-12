@@ -1,6 +1,7 @@
 package riddle
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -86,11 +87,9 @@ func GetExampleResult() [][]Cell {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // Solve by pathfinding and combining 2 paths
 
-func SolveMatrix(matrix [][]Cell) [][]Cell {
+func SolveMatrix(matrix [][]Cell) [][][]Cell {
 
-	if len(matrix) == 0 {
-		//|| len(matrix[0]) != len(matrix)
-
+	if len(matrix) == 0 || len(matrix[0]) == 1 || len(matrix) == 1 {
 		return nil
 	}
 
@@ -106,17 +105,19 @@ func SolveMatrix(matrix [][]Cell) [][]Cell {
 		solutionsRight = append(solutionsRight, makeWayRight(DuplicateMatrix(matrix), i, 0)...)
 	}
 
+	var solutions [][][]Cell = nil
+
 	// combine the ways and check if it doesn't break the rules
 	for _, solutionDown := range solutionsDown {
 		for _, solutionRight := range solutionsRight {
 			combined := combineMatrixes(solutionDown, solutionRight)
-			if iterateMatrixAndCheckIfGood(combined) {
-				return combined
+			if iterateMatrixAndCheckIfGood(combined) && !IsInMatrixArray(combined, solutions) {
+				solutions = append(solutions, combined)
 			}
 		}
 	}
 
-	return nil
+	return solutions
 }
 
 func makeWayDown(originMatrix [][]Cell, initRow, initColumn int) (result [][][]Cell) {
@@ -340,4 +341,23 @@ func CompareMatrices(matrix1, matrix2 [][]Cell) bool {
 		}
 	}
 	return true // Matrices are identical
+}
+
+func IsInMatrixArray(matrix [][]Cell, matrixArray [][][]Cell) bool {
+	for _, m := range matrixArray {
+		if CompareMatrices(matrix, m) {
+			return true
+		}
+	}
+	return false
+}
+
+func ValidateInputMatrix(matrix *[][]int) error {
+	if len(*matrix) == 0 {
+		return errors.New("matrix is empty")
+	}
+	if len((*matrix)[0]) == 1 || len(*matrix) == 1 {
+		return errors.New("matrix is required not a single row or column")
+	}
+	return nil
 }

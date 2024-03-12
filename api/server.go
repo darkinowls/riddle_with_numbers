@@ -22,6 +22,7 @@ func buildRoutes(r *gin.Engine) {
 	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("ping", checkIfAlive)
 	r.POST("solve", solveRiddle)
+	r.GET("solution", getResults)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,6 +40,8 @@ func checkIfAlive(c *gin.Context) {
 	})
 }
 
+var results [][][]riddle.Cell
+
 // @Summary solve riddle
 // @Description solve riddle
 // @ID solve-riddle
@@ -54,7 +57,27 @@ func solveRiddle(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	err = riddle.ValidateInputMatrix(&matrix)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	TranslateToCells := riddle.TranslateToCells(matrix)
-	result := riddle.SolveMatrix(TranslateToCells)
-	c.JSON(http.StatusOK, result)
+	results = riddle.SolveMatrix(TranslateToCells)
+	c.JSON(http.StatusOK, len(results))
+}
+
+// @Summary get next solution
+// @Description get next solution
+// @ID get-next-solution
+// @Produce json
+// @Success 200 {object} [][]riddle.Cell "solved matrix"
+// @Router /solution [get]
+func getResults(c *gin.Context) {
+	if len(results) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "no results"})
+		return
+	}
+	c.JSON(http.StatusOK, (results)[0])
+	results = results[1:]
 }
