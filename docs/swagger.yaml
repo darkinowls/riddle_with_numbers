@@ -1,0 +1,55 @@
+definitions:
+  riddle.Cell:
+    properties:
+      isMarked:
+        type: boolean
+      value:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      operationId: ping-example
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: ping example
+  /solve:
+    post:
+      consumes:
+      - application/json
+      description: solve riddle
+      operationId: solve-riddle
+      parameters:
+      - description: matrix
+        in: body
+        name: matrix
+        required: true
+        schema:
+          items:
+            items:
+              type: integer
+            type: array
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: solved matrix
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/riddle.Cell'
+              type: array
+            type: array
+      summary: solve riddle
+swagger: "2.0"

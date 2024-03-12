@@ -1,4 +1,4 @@
-package main
+package riddle
 
 import (
 	"fmt"
@@ -17,8 +17,8 @@ import (
 // DATA STRUCTURE
 
 type Cell struct {
-	IsMarked bool
-	Value    int8
+	IsMarked bool `json:"IsMarked"`
+	Value    int8 `json:"Value"`
 }
 
 func NewCell(value int8) Cell {
@@ -28,23 +28,21 @@ func NewCell(value int8) Cell {
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+func TranslateToCells(input [][]int) [][]Cell {
+	numRows := len(input)
+	numCols := len(input[0])
 
-func main() {
-
-	initial := getExampleInit()
-	result := SolveMatrix(initial)
-	PrintMatrix(result)
-	if CompareMatrices(result, getExampleResult()) {
-		println("\nMatrices are IDENTICAL")
-	} else {
-		println("\nMatrices are DIFFERENT")
+	output := make([][]Cell, numRows)
+	for i := 0; i < numRows; i++ {
+		output[i] = make([]Cell, numCols)
+		for j := 0; j < numCols; j++ {
+			output[i][j] = Cell{
+				Value:    int8(input[i][j]),
+				IsMarked: true,
+			}
+		}
 	}
-
-	initial = getTaskInit()
-	result = SolveMatrix(initial)
-	PrintMatrix(result)
-
+	return output
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +73,7 @@ func getExampleInit() [][]Cell {
 	return matrix
 }
 
-func getExampleResult() [][]Cell {
+func GetExampleResult() [][]Cell {
 	matrix := [][]Cell{
 		{Cell{true, 4}, Cell{false, 2}, Cell{false, 4}, Cell{false, 8}},
 		{Cell{false, 8}, Cell{false, 6}, Cell{true, 6}, Cell{true, 8}},
@@ -89,6 +87,12 @@ func getExampleResult() [][]Cell {
 // Solve by pathfinding and combining 2 paths
 
 func SolveMatrix(matrix [][]Cell) [][]Cell {
+
+	if len(matrix) == 0 {
+		//|| len(matrix[0]) != len(matrix)
+
+		return nil
+	}
 
 	// make way down from the top
 	var solutionsDown [][][]Cell
