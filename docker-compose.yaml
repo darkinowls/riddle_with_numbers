@@ -11,7 +11,19 @@ services:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
     volumes:
-      - db:/var/lib/postgresql/data
+      - prod_db:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+    ports:
+      - "8081:8081"
+    depends_on:
+      - account_db
+    environment:
+      GIN_MODE: release
+      DB_SOURCE: postgresql://myuser:mypassword@account_db:5432/mydb?sslmode=disable
+    command: sh /app/wait_for.sh db:5432 -- /app/start.sh
 
 volumes:
-  db:
+  prod_db:

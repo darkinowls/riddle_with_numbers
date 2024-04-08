@@ -31,7 +31,7 @@ func main() {
 
 	server, err := api.NewServer(&conf, store)
 	if err != nil {
-		fmt.Println("Error starting server: ", err.Error())
+		fmt.Println("Error creating server: ", err.Error())
 		return
 	}
 	err = server.Start(conf.ServerAddress)
