@@ -4,6 +4,106 @@
         "contact": {}
     },
     "paths": {
+        "/auth/create": {
+            "post": {
+                "description": "create user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "create user",
+                "operationId": "create-user",
+                "parameters": [
+                    {
+                        "description": "user",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.createUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/api.userResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "login user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "login user",
+                "operationId": "login-user",
+                "parameters": [
+                    {
+                        "description": "user",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.loginUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/api.loginUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorRes"
+                        }
+                    },
+                    "401": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorRes"
+                        }
+                    },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorRes"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "do ping",
@@ -86,6 +186,68 @@
         }
     },
     "definitions": {
+        "api.createUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 6
+                }
+            }
+        },
+        "api.errorRes": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.loginUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.loginUserResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/api.userResponse"
+                }
+            }
+        },
+        "api.userResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "riddle.Cell": {
             "type": "object",
             "properties": {

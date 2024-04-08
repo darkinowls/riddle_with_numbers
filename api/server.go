@@ -5,24 +5,53 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
+	db "riddle_with_numbers/db/sqlc"
 	"riddle_with_numbers/riddle"
+	"riddle_with_numbers/token"
+	"riddle_with_numbers/util"
 )
 
 type Server struct {
-	Router *gin.Engine
+	router     *gin.Engine
+	store      db.IStore
+	tokenMaker token.ITokenMaker
+	config     *util.Config
 }
 
-func NewServer() *Server {
+func NewServer(conf *util.Config, store db.IStore) (*Server, error) {
+	tokenMaker, err := token.NewJWTMaker(conf.TokenSymmetricKey)
+	if err != nil {
+		return nil, err
+	}
+	return &Server{store: store, tokenMaker: tokenMaker, config: conf}, nil
+}
+
+func (server *Server) Start(address string) error {
+	server.router = server.buildRoutes()
+	return server.router.Run(address)
+}
+
+func (server *Server) buildRoutes() *gin.Engine {
 	r := gin.Default()
-	buildRoutes(r)
-	return &Server{Router: r}
-}
 
-func buildRoutes(r *gin.Engine) {
+	g := r.Group("/auth")
+
+	g.POST("create", server.createUser)
+	g.POST("login", server.loginUser)
+
 	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("ping", checkIfAlive)
 	r.GET("solution", getResults)
 	r.POST("solve", solveRiddle)
+	return r
+}
+
+type errorRes struct {
+	Error string `json:"error"`
+}
+
+func errorResponse(err error) gin.H {
+	return gin.H{"error": err.Error()}
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +62,7 @@ func buildRoutes(r *gin.Engine) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} string "pong"
-// @Router /ping [get]
+// @router /ping [get]
 func checkIfAlive(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
@@ -46,7 +75,7 @@ var results [][][]riddle.Cell
 // @Description get next solution
 // @ID get-next-solution
 // @Success 200 {object} [][]riddle.Cell  "solved matrix"
-// @Router /solution [get]
+// @router /solution [get]
 func getResults(c *gin.Context) {
 	if len(results) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "no results"})
@@ -63,7 +92,7 @@ func getResults(c *gin.Context) {
 // @Produce json
 // @Param matrix body [][]int true "matrix"
 // @Success 200 {integer} int "number of solutions"
-// @Router /solve [post]
+// @router /solve [post]
 func solveRiddle(c *gin.Context) {
 	var matrix [][]int
 	err := c.BindJSON(&matrix)

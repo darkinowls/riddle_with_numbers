@@ -1,4 +1,45 @@
 definitions:
+  api.createUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 32
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  api.errorRes:
+    properties:
+      error:
+        type: string
+    type: object
+  api.loginUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  api.loginUserResponse:
+    properties:
+      access_token:
+        type: string
+      user:
+        $ref: '#/definitions/api.userResponse'
+    type: object
+  api.userResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+    type: object
   riddle.Cell:
     properties:
       IsMarked:
@@ -9,6 +50,72 @@ definitions:
 info:
   contact: {}
 paths:
+  /auth/create:
+    post:
+      consumes:
+      - application/json
+      description: create user
+      operationId: create-user
+      parameters:
+      - description: user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/api.createUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/api.errorRes'
+        "500":
+          description: error
+          schema:
+            $ref: '#/definitions/api.errorRes'
+      summary: create user
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login user
+      operationId: login-user
+      parameters:
+      - description: user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/api.loginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/api.loginUserResponse'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/api.errorRes'
+        "401":
+          description: error
+          schema:
+            $ref: '#/definitions/api.errorRes'
+        "404":
+          description: error
+          schema:
+            $ref: '#/definitions/api.errorRes'
+        "500":
+          description: error
+          schema:
+            $ref: '#/definitions/api.errorRes'
+      summary: login user
   /ping:
     get:
       consumes:
