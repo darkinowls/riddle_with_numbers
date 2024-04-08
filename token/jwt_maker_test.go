@@ -22,7 +22,7 @@ func TestJwt(t *testing.T) {
 
 	payload, err := maker.VerifyToken(token)
 	require.NoError(t, err)
-	require.Equal(t, username, payload.Username)
+	require.Equal(t, username, payload.Email)
 	require.NotZero(t, payload.Id)
 
 	issued := time.Now()

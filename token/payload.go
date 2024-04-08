@@ -7,7 +7,7 @@ import (
 
 type Payload struct {
 	Id        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
+	Email     string    `json:"email"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
@@ -19,7 +19,7 @@ func (p *Payload) Valid() error {
 	return nil
 }
 
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+func NewPayload(email string, duration time.Duration) (*Payload, error) {
 	token, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 	now := time.Now()
 	payload := &Payload{
 		Id:        token,
-		Username:  username,
+		Email:     email,
 		IssuedAt:  now,
 		ExpiredAt: now.Add(duration),
 	}

@@ -34,15 +34,16 @@ func (server *Server) Start(address string) error {
 func (server *Server) buildRoutes() *gin.Engine {
 	r := gin.Default()
 
-	g := r.Group("/auth")
-
-	g.POST("create", server.createUser)
-	g.POST("login", server.loginUser)
-
-	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("ping", checkIfAlive)
-	r.GET("solution", getResults)
-	r.POST("solve", solveRiddle)
+	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	ga := r.Group("/auth")
+	ga.POST("create", server.createUser)
+	ga.POST("login", server.loginUser)
+
+	gr := r.Group("/").Use(authMiddleware(server.tokenMaker))
+	gr.GET("solution", getResults)
+	gr.POST("solve", solveRiddle)
 	return r
 }
 
@@ -63,6 +64,7 @@ func errorResponse(err error) gin.H {
 // @Produce json
 // @Success 200 {object} string "pong"
 // @router /ping [get]
+// @Security BearerAuth
 func checkIfAlive(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
@@ -76,6 +78,7 @@ var results [][][]riddle.Cell
 // @ID get-next-solution
 // @Success 200 {object} [][]riddle.Cell  "solved matrix"
 // @router /solution [get]
+// @Security BearerAuth
 func getResults(c *gin.Context) {
 	if len(results) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "no results"})

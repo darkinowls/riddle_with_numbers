@@ -129,6 +129,8 @@ paths:
           description: pong
           schema:
             type: string
+      security:
+      - BearerAuth: []
       summary: ping example
   /solution:
     get:
@@ -143,6 +145,8 @@ paths:
                 $ref: '#/definitions/riddle.Cell'
               type: array
             type: array
+      security:
+      - BearerAuth: []
       summary: get next solution
   /solve:
     post:
@@ -169,4 +173,9 @@ paths:
           schema:
             type: integer
       summary: solve riddle
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -27,8 +27,6 @@ func newUserResponse(user db.User) *userResponse {
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 	}
-	//@Failure 400 {object} errorResponse "error"
-	//@Failure 500 {object} errorResponse "error"
 }
 
 // @Summary create user

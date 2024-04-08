@@ -13,6 +13,9 @@ import (
 )
 
 // @title: Riddle with numbers
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 
 	conf, err := util.LoadConfig(".")

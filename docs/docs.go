@@ -117,6 +117,11 @@ const docTemplate = `{
         },
         "/ping": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "do ping",
                 "consumes": [
                     "application/json"
@@ -138,6 +143,11 @@ const docTemplate = `{
         },
         "/solution": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "get next solution",
                 "summary": "get next solution",
                 "operationId": "get-next-solution",
@@ -269,6 +279,13 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
