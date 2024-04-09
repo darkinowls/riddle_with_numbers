@@ -13,17 +13,17 @@ services:
     volumes:
       - prod_db:/var/lib/postgresql/data
 
-  app:
-    build:
-      context: .
-    ports:
-      - "8081:8081"
-    depends_on:
-      - account_db
-    environment:
-      GIN_MODE: release
-      DB_SOURCE: postgresql://myuser:mypassword@account_db:5432/mydb?sslmode=disable
-    command: sh /app/wait_for.sh db:5432 -- /app/start.sh
+  #  app:
+  #    build:
+  #      context: .
+  #    ports:
+  #      - "8081:8081"
+  #    depends_on:
+  #      - account_db
+  #    environment:
+  #      GIN_MODE: release
+  #      DB_SOURCE: postgresql://myuser:mypassword@account_db:5432/mydb?sslmode=disable
+  #    command: sh /app/wait_for.sh db:5432 -- /app/start.sh
 
 
   gitlab:
@@ -47,8 +47,9 @@ services:
   jenkins:
     hostname: jenkins.example.com
     container_name: jenkins
-    image: docker.io/bitnami/jenkins:2
-    user: root
+    build:
+      context: .
+      dockerfile: jenkins.Dockerfile
     ports:
       - '8091:8080'
     environment:
@@ -56,14 +57,6 @@ services:
       JENKINS_PASSWORD: "bitnami"
     volumes:
       - jenkins_data:/bitnami/jenkins
-    command: sh -c
-      "apt-get update &&
-      apt-get install -y make &&
-      curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose &&
-      chmod +x /usr/local/bin/docker-compose &&
-      java -jar /opt/bitnami/jenkins/jenkins.war --httpPort=8080"
-    #      apt-get install -y git curl
-    #      sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
 volumes:
   prod_db:
