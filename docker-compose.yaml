@@ -25,5 +25,46 @@ services:
       DB_SOURCE: postgresql://myuser:mypassword@account_db:5432/mydb?sslmode=disable
     command: sh /app/wait_for.sh db:5432 -- /app/start.sh
 
+
+  gitlab:
+    image: gitlab/gitlab-ee:16.10.1-ee.0
+    container_name: gitlab
+    hostname: gitlab.example.com
+    environment:
+      #     login: root
+      GITLAB_ROOT_PASSWORD: "password"
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.example.com'
+    ports:
+      - "8092:80"
+      - "8022:22"
+    volumes:
+      - ./gitlab/config:/etc/gitlab
+      - ./gitlab/logs:/var/log/gitlab
+      - ./gitlab/data:/var/opt/gitlab
+    # PERSONAL ACCESS TOKEN: glpat-BeSzNamz6hHGq7WpCuEU
+
+  jenkins:
+    hostname: jenkins.example.com
+    container_name: jenkins
+    image: docker.io/bitnami/jenkins:2
+    user: root
+    ports:
+      - '8091:8080'
+    environment:
+      #     login: user
+      JENKINS_PASSWORD: "bitnami"
+    volumes:
+      - jenkins_data:/bitnami/jenkins
+    command: sh -c
+      "apt-get update &&
+      apt-get install -y make &&
+      curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose &&
+      chmod +x /usr/local/bin/docker-compose &&
+      java -jar /opt/bitnami/jenkins/jenkins.war --httpPort=8080"
+    #      apt-get install -y git curl
+    #      sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
 volumes:
   prod_db:
+  jenkins_data:

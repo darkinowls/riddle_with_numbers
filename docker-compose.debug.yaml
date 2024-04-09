@@ -14,38 +14,5 @@ services:
       - db:/var/lib/postgresql/data
 
 
-  gitlab:
-    image: gitlab/gitlab-ee:16.10.1-ee.0
-    container_name: gitlab
-    hostname: gitlab.example.com
-    environment:
-#     login: root
-      GITLAB_ROOT_PASSWORD: "password"
-      GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://gitlab.example.com'
-    ports:
-      - "8092:80"
-      - "8022:22"
-    volumes:
-      - ./gitlab/config:/etc/gitlab
-      - ./gitlab/logs:/var/log/gitlab
-      - ./gitlab/data:/var/opt/gitlab
-# PERSONAL ACCESS TOKEN: glpat-BeSzNamz6hHGq7WpCuEU
-
-  jenkins:
-    hostname: jenkins.example.com
-    container_name: jenkins
-    image: docker.io/bitnami/jenkins:2
-    privileged: true
-    ports:
-      - '8091:8080'
-    environment:
-      #     login: user
-      JENKINS_PASSWORD: "bitnami"
-    volumes:
-      - jenkins_data:/bitnami/jenkins
-
-
 volumes:
   db:
-  jenkins_data:
