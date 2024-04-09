@@ -19,6 +19,7 @@ services:
     container_name: gitlab
     hostname: gitlab.example.com
     environment:
+#     login: root
       GITLAB_ROOT_PASSWORD: "password"
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://gitlab.example.com'
@@ -29,17 +30,20 @@ services:
       - ./gitlab/config:/etc/gitlab
       - ./gitlab/logs:/var/log/gitlab
       - ./gitlab/data:/var/opt/gitlab
+# PERSONAL ACCESS TOKEN: glpat-BeSzNamz6hHGq7WpCuEU
 
-#  jenkins:
-#    image: docker.io/bitnami/jenkins:2
-#    ports:
-#      - '8091:8080'
-#    environment:
-#      - JENKINS_PASSWORD=bitnami
-#    volumes:
-#      - jenkins_data:/bitnami/jenkins
+  jenkins:
+    hostname: jenkins.example.com
+    image: docker.io/bitnami/jenkins:2
+    ports:
+      - '8091:8080'
+    environment:
+      #     login: user
+      JENKINS_PASSWORD: "bitnami"
+    volumes:
+      - jenkins_data:/bitnami/jenkins
 
 
 volumes:
   db:
-#  jenkins_data:
+  jenkins_data:
