@@ -1,9 +1,9 @@
 CREATE TABLE "user"
 (
     "id"              bigserial PRIMARY KEY,
-    "email"           varchar     NOT NULL,
-    "hashed_password" varchar      NOT NULL,
-    "created_at"      timestamptz NOT NULL DEFAULT (now())
+    "email"           varchar unique NOT NULL,
+    "hashed_password" varchar        NOT NULL,
+    "created_at"      timestamptz    NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "solution"

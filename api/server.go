@@ -1,12 +1,14 @@
 package api
 
 import (
+	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"log"
 	"net/http"
 	db "riddle_with_numbers/db/sqlc"
-	"riddle_with_numbers/riddle"
 	"riddle_with_numbers/token"
 	"riddle_with_numbers/util"
 )
@@ -26,6 +28,26 @@ func NewServer(conf *util.Config, store db.IStore) (*Server, error) {
 	return &Server{store: store, tokenMaker: tokenMaker, config: conf}, nil
 }
 
+func NewTestServer() (*Server, error) {
+	conf, err := util.LoadConfig("..")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
+		return nil, err
+	}
+	dbCon, err := sql.Open(conf.DBDriver, conf.DBSource)
+	if err != nil {
+		log.Fatal("cannot connect to db:", err)
+		return nil, err
+	}
+	server, err := NewServer(&conf, db.NewStore(dbCon))
+	if err != nil {
+		fmt.Println("Error creating server: ", err.Error())
+		return nil, err
+	}
+	server.router = server.buildRoutes()
+	return server, nil
+}
+
 func (server *Server) Start(address string) error {
 	server.router = server.buildRoutes()
 	return server.router.Run(address)
@@ -42,8 +64,8 @@ func (server *Server) buildRoutes() *gin.Engine {
 	ga.POST("login", server.loginUser)
 
 	gr := r.Group("/").Use(authMiddleware(server.tokenMaker))
-	gr.GET("solution", getResults)
-	gr.POST("solve", solveRiddle)
+	gr.GET("solution", server.getResults)
+	gr.POST("solve", server.solveRiddle)
 	return r
 }
 
@@ -69,46 +91,4 @@ func checkIfAlive(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
-}
-
-var results [][][]riddle.Cell
-
-// @Summary get next solution
-// @Description get next solution
-// @ID get-next-solution
-// @Success 200 {object} [][]riddle.Cell  "solved matrix"
-// @router /solution [get]
-// @Security BearerAuth
-func getResults(c *gin.Context) {
-	if len(results) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "no results"})
-		return
-	}
-	c.JSON(http.StatusOK, (results)[0])
-	results = results[1:]
-}
-
-// @Summary solve riddle
-// @Description solve riddle
-// @ID solve-riddle
-// @Accept json
-// @Produce json
-// @Param matrix body [][]int true "matrix"
-// @Success 200 {integer} int "number of solutions"
-// @router /solve [post]
-func solveRiddle(c *gin.Context) {
-	var matrix [][]int
-	err := c.BindJSON(&matrix)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	err = riddle.ValidateInputMatrix(&matrix)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	TranslateToCells := riddle.TranslateToCells(matrix)
-	results = riddle.SolveMatrix(TranslateToCells)
-	c.JSON(http.StatusOK, len(results))
 }

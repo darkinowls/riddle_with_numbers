@@ -11,6 +11,6 @@ var errTokenExpired = fmt.Errorf("token is expired")
 // factory pattern
 type ITokenMaker interface {
 	// CreateToken creates a new token for a specific username and duration
-	CreateToken(username string, duration time.Duration) (string, error)
+	CreateToken(email string, duration time.Duration) (string, error)
 	VerifyToken(token string) (*Payload, error)
 }

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const abc = "abcdefghijklmnopqrstuvwxyz"
+const abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // first
 func init() {
@@ -27,10 +27,6 @@ func RandomString(size int) string {
 	return sb.String()
 }
 
-func RandomOwner() string {
-	return RandomString(6)
-}
-
 func RandomEmail() string {
-	return RandomString(6) + "@example.com"
+	return RandomString(30) + "@example.com"
 }
