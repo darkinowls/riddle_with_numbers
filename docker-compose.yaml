@@ -32,7 +32,7 @@ services:
     hostname: gitlab.example.com
     environment:
       #     login: root
-      GITLAB_ROOT_PASSWORD: "password"
+      #grep Password: /etc/gitlab/initial_root_password
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://gitlab.example.com'
     ports:
