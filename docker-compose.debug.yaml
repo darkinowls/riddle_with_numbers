@@ -13,8 +13,6 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
 
-
-
 volumes:
   db:
   jenkins_data:

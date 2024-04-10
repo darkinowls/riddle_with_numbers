@@ -1,0 +1,41 @@
+version: '3.7'
+
+services:
+
+  gitlab:
+    image: gitlab/gitlab-ee:16.10.1-ee.0
+    container_name: gitlab
+    hostname: gitlab.example.com
+    environment:
+      #     login: root
+      #grep Password: /etc/gitlab/initial_root_password
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.example.com'
+    ports:
+      - "8092:80"
+      - "8022:22"
+    volumes:
+      - ./gitlab/config:/etc/gitlab
+      - ./gitlab/logs:/var/log/gitlab
+      - ./gitlab/data:/var/opt/gitlab
+    # PERSONAL ACCESS TOKEN: glpat-BeSzNamz6hHGq7WpCuEU
+
+  jenkins:
+    hostname: jenkins.example.com
+    container_name: jenkins
+    build:
+      context: .
+      dockerfile: jenkins.Dockerfile
+    ports:
+      - '8091:8080'
+      - '50000:50000'
+    environment:
+      #     login: user
+      JENKINS_PASSWORD: "bitnami"
+    volumes:
+      - jenkins_data:/bitnami/jenkins
+      - //var/run/docker.sock:/var/run/docker.sock # Docker on Docker
+
+
+volumes:
+  jenkins_data:

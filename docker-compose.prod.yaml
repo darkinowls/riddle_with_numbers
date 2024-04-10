@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+
+  db:
+    restart: always
+    image: postgres:16-alpine
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - db_prod:/var/lib/postgresql/data
+
+  app:
+    restart: always
+    build:
+      context: .
+      dockerfile: prod.Dockerfile
+    depends_on:
+      - db
+    environment:
+      DB_SOURCE: postgresql://myuser:mypassword@db:5432/mydb?sslmode=disable
+    command: sh wait_for.sh db:5432 -- /app/start.sh
+    deploy:
+      replicas: 2
+
+  proxy:
+    restart: always
+    build:
+      context: ./proxy
+    ports:
+      - "8081:80"
+    depends_on:
+      - app
+
+volumes:
+  db_prod:
