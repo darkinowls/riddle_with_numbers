@@ -57,6 +57,7 @@ func (server *Server) buildRoutes() *gin.Engine {
 	r := gin.Default()
 
 	r.GET("ping", checkIfAlive)
+	r.GET("/condition/:id", server.getSolutionById)
 	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	ga := r.Group("/auth")

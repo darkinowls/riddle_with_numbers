@@ -1,9 +1,11 @@
 package api
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"riddle_with_numbers/riddle"
+	"strconv"
 )
 
 var results [][][]riddle.Cell
@@ -46,4 +48,35 @@ func (server *Server) solveRiddle(c *gin.Context) {
 	TranslateToCells := riddle.TranslateToCells(matrix)
 	results = riddle.SolveMatrix(TranslateToCells)
 	c.JSON(http.StatusOK, len(results))
+}
+
+// @Success 200 {object} RawMessage "solution"
+
+// @Summary get solution by id
+// @Description get solution by id
+// @ID get-solution-by-id
+// @Param id path int true "solution id"
+// @router /condition/{id} [get]
+// @Security BearerAuth
+func (server *Server) getSolutionById(c *gin.Context) {
+	idStr := c.Param("id")
+	println(idStr)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		// Handle error if the ID cannot be converted to an integer
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	// Now you have the ID, you can use it to fetch the solution from your database or any storage
+
+	// For example:
+	solution, err := server.store.GetSolution(context.Background(), int64(id))
+	if err != nil {
+		// Handle error if there's an issue retrieving the solution
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve solution"})
+		return
+	}
+
+	// Return the solution as JSON
+	c.JSON(http.StatusOK, solution.Condition)
 }

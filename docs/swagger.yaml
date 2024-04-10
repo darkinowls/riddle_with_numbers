@@ -116,6 +116,20 @@ paths:
           schema:
             $ref: '#/definitions/api.errorRes'
       summary: login user
+  /condition/{id}:
+    get:
+      description: get solution by id
+      operationId: get-solution-by-id
+      parameters:
+      - description: solution id
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: get solution by id
   /ping:
     get:
       consumes:

@@ -115,6 +115,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/condition/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "get solution by id",
+                "summary": "get solution by id",
+                "operationId": "get-solution-by-id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "solution id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/ping": {
             "get": {
                 "security": [
