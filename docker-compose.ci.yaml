@@ -2,30 +2,6 @@ version: '3.7'
 
 services:
 
-  db:
-    image: postgres:16-alpine
-    ports:
-      - "5431:5432"
-    environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-    volumes:
-      - prod_db:/var/lib/postgresql/data
-
-  #  app:
-  #    build:
-  #      context: .
-  #    ports:
-  #      - "8081:8081"
-  #    depends_on:
-  #      - account_db
-  #    environment:
-  #      GIN_MODE: release
-  #      DB_SOURCE: postgresql://myuser:mypassword@account_db:5432/mydb?sslmode=disable
-  #    command: sh /app/wait_for.sh db:5432 -- /app/start.sh
-
-
   gitlab:
     image: gitlab/gitlab-ee:16.10.1-ee.0
     container_name: gitlab
@@ -52,11 +28,14 @@ services:
       dockerfile: jenkins.Dockerfile
     ports:
       - '8091:8080'
+      - '50000:50000'
     environment:
       #     login: user
       JENKINS_PASSWORD: "bitnami"
     volumes:
       - jenkins_data:/bitnami/jenkins
+      - //var/run/docker.sock:/var/run/docker.sock # Docker on Docker
+
 
 volumes:
   prod_db:
