@@ -20,6 +20,7 @@ RUN chmod +x /usr/local/bin/migrate
 
 RUN apk update && apk add make
 
+RUN chmod +x /app/test.sh
 # Command to run the executable
 RUN go build -o main main.go
 
