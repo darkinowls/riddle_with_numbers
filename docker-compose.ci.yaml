@@ -38,5 +38,4 @@ services:
 
 
 volumes:
-  prod_db:
   jenkins_data:
