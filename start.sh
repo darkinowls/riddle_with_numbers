@@ -1,3 +1,5 @@
 #!/usr/bin/env sh
 
-echo "DB is ready" && /app/main
+migrate -path ./db/migrations -database ${DB_SOURCE} -verbose up
+
+/app/main
