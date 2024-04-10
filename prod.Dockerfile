@@ -25,6 +25,7 @@ COPY --from=builder /app/default.env .
 COPY --from=builder /app/wait_for.sh .
 COPY --from=builder /app/start.sh .
 COPY --from=builder /app/test.sh .
+COPY --from=builder /app/db/migrations /app/db/migrations
 
 RUN apk update  # Update the package index
 RUN apk add make  # Install make
