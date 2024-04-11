@@ -2,8 +2,11 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	db "riddle_with_numbers/db/sqlc"
 	"riddle_with_numbers/riddle"
 	"strconv"
 )
@@ -33,6 +36,7 @@ func (server *Server) getResults(c *gin.Context) {
 // @Param matrix body [][]int true "matrix"
 // @Success 200 {integer} int "number of solutions"
 // @router /solve [post]
+// @Security BearerAuth
 func (server *Server) solveRiddle(c *gin.Context) {
 	var matrix [][]int
 	err := c.BindJSON(&matrix)
@@ -57,7 +61,6 @@ func (server *Server) solveRiddle(c *gin.Context) {
 // @ID get-solution-by-id
 // @Param id path int true "solution id"
 // @router /condition/{id} [get]
-// @Security BearerAuth
 func (server *Server) getSolutionById(c *gin.Context) {
 	idStr := c.Param("id")
 	println(idStr)
@@ -79,4 +82,36 @@ func (server *Server) getSolutionById(c *gin.Context) {
 
 	// Return the solution as JSON
 	c.JSON(http.StatusOK, solution.Condition)
+}
+
+// @Summary generate conditions
+// @Description generate conditions for matrix 3x3
+// @ID generate-solutions
+// @router /generate [post]
+func (server *Server) generateConditions(c *gin.Context) {
+	err := server.store.DeleteAllSolutions(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorRes{Error: "Failed to delete all solutions"})
+		return
+	}
+	conditions := riddle.GenerateAllMatrices(riddle.MatrixSize)
+	for _, con := range conditions {
+		jsonData, err := json.Marshal(con)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, errorRes{Error: "Failed to generate conditions"})
+			return
+		}
+		_, err = server.store.CreateSolution(context.Background(),
+			db.CreateSolutionParams{
+				Condition: jsonData,
+			},
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, errorRes{Error: "Failed to save conditions"})
+			return
+		}
+
+	}
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%d Solutions generated", len(conditions))})
+
 }

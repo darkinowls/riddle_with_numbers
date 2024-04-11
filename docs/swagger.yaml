@@ -127,9 +127,13 @@ paths:
         required: true
         type: integer
       responses: {}
-      security:
-      - BearerAuth: []
       summary: get solution by id
+  /generate:
+    post:
+      description: generate conditions for matrix 3x3
+      operationId: generate-solutions
+      responses: {}
+      summary: generate conditions
   /ping:
     get:
       consumes:
@@ -143,8 +147,6 @@ paths:
           description: pong
           schema:
             type: string
-      security:
-      - BearerAuth: []
       summary: ping example
   /solution:
     get:
@@ -186,6 +188,8 @@ paths:
           description: number of solutions
           schema:
             type: integer
+      security:
+      - BearerAuth: []
       summary: solve riddle
 securityDefinitions:
   BearerAuth:

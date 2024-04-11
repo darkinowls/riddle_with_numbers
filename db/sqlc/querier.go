@@ -11,7 +11,9 @@ import (
 type Querier interface {
 	CreateSolution(ctx context.Context, arg CreateSolutionParams) (Solution, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteAllSolutions(ctx context.Context) error
 	GetSolution(ctx context.Context, id int64) (Solution, error)
+	GetSolutionCount(ctx context.Context) (int64, error)
 	GetUser(ctx context.Context, email string) (User, error)
 }
 

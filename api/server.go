@@ -58,6 +58,7 @@ func (server *Server) buildRoutes() *gin.Engine {
 
 	r.GET("ping", checkIfAlive)
 	r.GET("/condition/:id", server.getSolutionById)
+	r.POST("/generate", server.generateConditions)
 	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	ga := r.Group("/auth")
@@ -87,7 +88,6 @@ func errorResponse(err error) gin.H {
 // @Produce json
 // @Success 200 {object} string "pong"
 // @router /ping [get]
-// @Security BearerAuth
 func checkIfAlive(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",

@@ -117,11 +117,6 @@ const docTemplate = `{
         },
         "/condition/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "get solution by id",
                 "summary": "get solution by id",
                 "operationId": "get-solution-by-id",
@@ -137,13 +132,16 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/generate": {
+            "post": {
+                "description": "generate conditions for matrix 3x3",
+                "summary": "generate conditions",
+                "operationId": "generate-solutions",
+                "responses": {}
+            }
+        },
         "/ping": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "do ping",
                 "consumes": [
                     "application/json"
@@ -191,6 +189,11 @@ const docTemplate = `{
         },
         "/solve": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "solve riddle",
                 "consumes": [
                     "application/json"

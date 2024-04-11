@@ -35,8 +35,18 @@ func (q *Queries) CreateSolution(ctx context.Context, arg CreateSolutionParams) 
 	return i, err
 }
 
+const deleteAllSolutions = `-- name: DeleteAllSolutions :exec
+TRUNCATE TABLE "solution" RESTART IDENTITY CASCADE
+`
+
+func (q *Queries) DeleteAllSolutions(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllSolutions)
+	return err
+}
+
 const getSolution = `-- name: GetSolution :one
-SELECT id, condition, solution, created_at FROM "solution"
+SELECT id, condition, solution, created_at
+FROM "solution"
 where id = $1
 LIMIT 1
 `
@@ -51,4 +61,16 @@ func (q *Queries) GetSolution(ctx context.Context, id int64) (Solution, error) {
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getSolutionCount = `-- name: GetSolutionCount :one
+SELECT COUNT(*)
+FROM "solution"
+`
+
+func (q *Queries) GetSolutionCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getSolutionCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
