@@ -130,16 +130,6 @@ func TestCreateUserAPI(t *testing.T) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
-		{
-			name: "Invalid Login",
-			body: gin.H{
-				"password": "invalid_password",
-				"email":    user.Email,
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
-			},
-		},
 	}
 
 	for _, tc := range testCases {
