@@ -25,6 +25,7 @@ func authMiddleware(maker token.ITokenMaker) gin.HandlerFunc {
 			c.AbortWithStatusJSON(401, errorResponse(errors.New("unauthorized")))
 			return
 		}
+
 		// TODO: check if the user exists
 
 		c.Set(authPayloadKey, verifyToken)

@@ -1,11 +1,12 @@
 package token
 
 import (
-	"github.com/golang-jwt/jwt"
-	"github.com/stretchr/testify/require"
 	"riddle_with_numbers/util"
 	"testing"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJwt(t *testing.T) {

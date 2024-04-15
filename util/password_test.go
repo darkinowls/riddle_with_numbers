@@ -24,3 +24,8 @@ func TestHashPassword(t *testing.T) {
 	require.NotEqual(t, hashed1, hashed2)
 
 }
+
+func TestErrorPassword(t *testing.T) {
+	err := CheckPassword("password", "wrong_hash1111111111111111111111111111")
+	require.EqualError(t, err, bcrypt.ErrHashTooShort.Error())
+}

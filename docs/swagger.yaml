@@ -128,10 +128,16 @@ paths:
         type: integer
       responses: {}
       summary: get solution by id
-  /generate:
+  /generate/{num}:
     post:
-      description: generate conditions for matrix 3x3
+      description: generate conditions for matrix num x num
       operationId: generate-solutions
+      parameters:
+      - description: number of conditions
+        in: path
+        name: num
+        required: true
+        type: integer
       responses: {}
       summary: generate conditions
   /ping:

@@ -132,11 +132,20 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/generate": {
+        "/generate/{num}": {
             "post": {
-                "description": "generate conditions for matrix 3x3",
+                "description": "generate conditions for matrix num x num",
                 "summary": "generate conditions",
                 "operationId": "generate-solutions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "number of conditions",
+                        "name": "num",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {}
             }
         },

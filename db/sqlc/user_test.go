@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	_ "github.com/lib/pq" // import PostgreSQL driver
+	"riddle_with_numbers/util"
 	"testing"
 )
 
@@ -14,7 +15,7 @@ func TestCreateUser(t *testing.T) {
 	// Test data
 	testUser := CreateUserParams{
 		HashedPassword: "hashed_password",
-		Email:          "test1@example.com",
+		Email:          util.RandomEmail(),
 	}
 
 	// Execute the CreateUser function

@@ -2,13 +2,16 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	db "riddle_with_numbers/db/sqlc"
 	"riddle_with_numbers/riddle"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 var results [][][]riddle.Cell
@@ -74,6 +77,12 @@ func (server *Server) getSolutionById(c *gin.Context) {
 
 	// For example:
 	solution, err := server.store.GetSolution(context.Background(), int64(id))
+
+	if errors.Is(err, sql.ErrNoRows) {
+		c.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
 	if err != nil {
 		// Handle error if there's an issue retrieving the solution
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve solution"})
@@ -85,16 +94,24 @@ func (server *Server) getSolutionById(c *gin.Context) {
 }
 
 // @Summary generate conditions
-// @Description generate conditions for matrix 3x3
+// @Description generate conditions for matrix num x num
 // @ID generate-solutions
-// @router /generate [post]
+// @Param num path int true "number of conditions"
+// @router /generate/{num} [post]
 func (server *Server) generateConditions(c *gin.Context) {
-	err := server.store.DeleteAllSolutions(context.Background())
+
+	numStr := c.Param("num")
+	num, err := strconv.Atoi(numStr)
+	if err != nil || num > 3 || num <= 1 {
+		c.JSON(http.StatusBadRequest, errorRes{Error: "Invalid number for the command"})
+		return
+	}
+	err = server.store.DeleteAllSolutions(context.Background())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorRes{Error: "Failed to delete all solutions"})
 		return
 	}
-	conditions := riddle.GenerateAllMatrices(riddle.MatrixSize)
+	conditions := riddle.GenerateAllMatrices(num)
 	for _, con := range conditions {
 		jsonData, err := json.Marshal(con)
 		if err != nil {

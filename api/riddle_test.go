@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"riddle_with_numbers/riddle"
@@ -11,6 +10,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -67,6 +68,20 @@ func TestSolveRiddle(t *testing.T) {
 				assert.Equal(t, http.StatusUnauthorized, w.Code)
 			},
 		},
+
+		{
+			name: "401 invalid token",
+			checkResponse: func(t *testing.T) {
+				w := httptest.NewRecorder()
+				req, err := http.NewRequest("POST", "/solve", bytes.NewReader(jsonMatrix))
+				authHeader := "Bearer " + "invalid_token_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+				req.Header.Set(authorizationHeaderKey, authHeader)
+				assert.NoError(t, err)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, http.StatusUnauthorized, w.Code)
+			},
+		},
+
 		{
 			name: "200 create",
 			checkResponse: func(t *testing.T) {
@@ -148,4 +163,82 @@ func TestSolveRiddle(t *testing.T) {
 		})
 	}
 
+}
+
+func TestCondition(t *testing.T) {
+	server, err := NewTestServer()
+	assert.NoError(t, err)
+	router := server.router
+
+	testCases := []struct {
+		name          string
+		checkResponse func(t *testing.T)
+	}{
+		{
+			name: "Error num input 400",
+			checkResponse: func(t *testing.T) {
+				w := httptest.NewRecorder()
+				req, err := http.NewRequest("POST", "/generate/1000", nil)
+				assert.NoError(t, err)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+		{
+			name: "Generate conditions",
+			checkResponse: func(t *testing.T) {
+				w := httptest.NewRecorder()
+				req, err := http.NewRequest("POST", "/generate/2", nil)
+				assert.NoError(t, err)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, http.StatusOK, w.Code)
+			},
+		},
+		{
+			name: "Check condition",
+			checkResponse: func(t *testing.T) {
+				w := httptest.NewRecorder()
+				req, err := http.NewRequest("GET", "/condition/1", nil)
+				assert.NoError(t, err)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, http.StatusOK, w.Code)
+
+				// Read the response body as bytes
+				bodyBytes := w.Body.Bytes()
+				var matrix [][]int
+				err = json.Unmarshal(bodyBytes, &matrix)
+				assert.NoError(t, err)
+				assert.Equal(t, 2, len(matrix)) // Assuming the matrix is of size 3x3
+
+			},
+		},
+
+		{
+			name: "400 bad id",
+			checkResponse: func(t *testing.T) {
+				w := httptest.NewRecorder()
+				req, err := http.NewRequest("GET", "/condition/aaa", nil)
+				assert.NoError(t, err)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+
+		{
+			name: "404",
+			checkResponse: func(t *testing.T) {
+				w := httptest.NewRecorder()
+				req, err := http.NewRequest("GET", "/condition/100", nil)
+				assert.NoError(t, err)
+				router.ServeHTTP(w, req)
+				assert.Equal(t, http.StatusNotFound, w.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.checkResponse(t)
+		})
+	}
 }

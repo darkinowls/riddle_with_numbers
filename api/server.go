@@ -3,14 +3,15 @@ package api
 import (
 	"database/sql"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 	"net/http"
 	db "riddle_with_numbers/db/sqlc"
 	"riddle_with_numbers/token"
 	"riddle_with_numbers/util"
+
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Server struct {
@@ -58,7 +59,7 @@ func (server *Server) buildRoutes() *gin.Engine {
 
 	r.GET("ping", checkIfAlive)
 	r.GET("/condition/:id", server.getSolutionById)
-	r.POST("/generate", server.generateConditions)
+	r.POST("/generate/:num", server.generateConditions)
 	r.GET("docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	ga := r.Group("/auth")
