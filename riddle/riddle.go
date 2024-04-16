@@ -46,6 +46,7 @@ func SolveMatrix(matrix [][]Cell) [][][]Cell {
 }
 
 func makeWayDown(originMatrix [][]Cell, initRow, initColumn int) (result [][][]Cell) {
+	PrintMatrix(originMatrix)
 	solutions := exploreMatrix(originMatrix, initRow, initColumn)
 	for _, solution := range solutions {
 		if checkIfTouchesBottomWall(solution) {

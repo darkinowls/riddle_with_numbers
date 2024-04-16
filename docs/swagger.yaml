@@ -1,5 +1,17 @@
 definitions:
-  api.createUserRequest:
+  api.errorRes:
+    properties:
+      error:
+        type: string
+    type: object
+  api.loginUserResponse:
+    properties:
+      access_token:
+        type: string
+      user:
+        $ref: '#/definitions/api.userResponse'
+    type: object
+  api.userRequest:
     properties:
       email:
         type: string
@@ -10,28 +22,6 @@ definitions:
     required:
     - email
     - password
-    type: object
-  api.errorRes:
-    properties:
-      error:
-        type: string
-    type: object
-  api.loginUserRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  api.loginUserResponse:
-    properties:
-      access_token:
-        type: string
-      user:
-        $ref: '#/definitions/api.userResponse'
     type: object
   api.userResponse:
     properties:
@@ -62,7 +52,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/api.createUserRequest'
+          $ref: '#/definitions/api.userRequest'
       produces:
       - application/json
       responses:
@@ -91,7 +81,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/api.loginUserRequest'
+          $ref: '#/definitions/api.userRequest'
       produces:
       - application/json
       responses:
