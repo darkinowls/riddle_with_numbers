@@ -15,11 +15,12 @@ services:
       - "8092:80"
       - "8022:22"
     volumes:
-      - ./gitlab/config:/etc/gitlab
-      - ./gitlab/logs:/var/log/gitlab
-      - ./gitlab/data:/var/opt/gitlab
-    # PERSONAL ACCESS TOKEN: glpat-BeSzNamz6hHGq7WpCuEU
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    # PERSONAL ACCESS TOKEN: glpat-NKM6W1B9-wm-r847bshD
 
+#  glpat-DDXgiyyYj8m15s75gNyz
   jenkins:
     hostname: jenkins.example.com
     container_name: jenkins
@@ -39,3 +40,6 @@ services:
 
 volumes:
   jenkins_data:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:

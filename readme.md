@@ -42,7 +42,39 @@ docs: http://localhost:8081/docs/index.html
 
 ### Curl client
 
-Test the server with
+In order to use the server you need to get a token
+and set it in the header of the request.
+Example of header with token
+```sh
+-H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMzYTkyMzA3LTNiM2QtNDQwNy1hZGI1LWJiMTNkNmYzNjkxYSIsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsImlzc3VlZF9hdCI6IjIwMjQtMDQtMTZUMTc6NTY6MzAuNDI1NDAwNyswMzowMCIsImV4cGlyZWRfYXQiOiIyMDI0LTA0LTE2VDE5OjM2OjMwLjQyNTQwMDcrMDM6MDAifQ.qG_dSc64hrfgvD4JFqtZ4Urr20SDEA3MmbcMjrqHVo0'
+```
+
+To get a token you need to register a user
+```sh
+curl -X 'POST' \
+  'http://localhost:8081/auth/create' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "user@example.com",
+  "password": "string"
+}'
+```
+
+And Then login to get a token
+```sh
+curl -X 'POST' \
+  'http://localhost:8081/auth/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "user@example.com",
+  "password": "string"
+}'
+```
+
+
+Test the server with (**Don`t forget about token**)
 
 ```sh
 curl -X 'GET' \
