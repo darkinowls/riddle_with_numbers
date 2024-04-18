@@ -1,7 +1,6 @@
 version: '3.7'
 
 services:
-
   db:
     image: postgres:16-alpine
     ports:
@@ -10,6 +9,8 @@ services:
       POSTGRES_DB: mydb
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
+    networks:
+      - test_riddle_network
 
   app_test:
     build:
@@ -22,3 +23,9 @@ services:
     environment:
       DB_SOURCE: postgresql://myuser:mypassword@db:5432/mydb?sslmode=disable
     command: sh wait_for.sh db:5432 -- /app/test.sh
+    networks:
+      - test_riddle_network
+
+networks:
+  test_riddle_network:
+    driver: bridge
