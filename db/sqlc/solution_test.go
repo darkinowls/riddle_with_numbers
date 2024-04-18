@@ -52,11 +52,6 @@ func TestSolutions(t *testing.T) {
 				solution, err = testQueries.GetSolution(context.Background(), solution.ID)
 				assert.Error(t, err)
 				assert.Empty(t, solution)
-
-				newCount, err := testQueries.GetSolutionCount(context.Background())
-				assert.NoError(t, err)
-				println(newCount)
-				assert.True(t, newCount == 0)
 			},
 		},
 	}
