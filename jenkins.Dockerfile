@@ -9,7 +9,7 @@ RUN install_packages docker.io docker docker-compose
 # Create the jenkins user
 RUN useradd jenkins
 
-# Add the jenkins user to the docker group
+# Add the jenkins user to the root group
 RUN usermod -aG root jenkins
 
 # Set permissions for the /run directory to allow the docker group to access it

@@ -28,7 +28,7 @@ func TestSolutions(t *testing.T) {
 		checkResponse func(t *testing.T)
 	}{
 		{
-			name: "TestCreateSolution",
+			name: "Test Create Solution",
 			checkResponse: func(t *testing.T) {
 				count, err := testQueries.GetSolutionCount(context.Background())
 				assert.NoError(t, err)
@@ -41,7 +41,7 @@ func TestSolutions(t *testing.T) {
 			},
 		},
 		{
-			name: "TestDeleteSolutions",
+			name: "Test Delete Solutions",
 			checkResponse: func(t *testing.T) {
 				count, err := testQueries.GetSolutionCount(context.Background())
 				assert.NoError(t, err)
@@ -53,9 +53,10 @@ func TestSolutions(t *testing.T) {
 				assert.Error(t, err)
 				assert.Empty(t, solution)
 
-				count, err = testQueries.GetSolutionCount(context.Background())
+				newCount, err := testQueries.GetSolutionCount(context.Background())
 				assert.NoError(t, err)
-				assert.True(t, count == 0)
+				println(newCount)
+				assert.True(t, newCount == 0)
 			},
 		},
 	}
