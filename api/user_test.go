@@ -97,17 +97,6 @@ func TestCreateUserAPI(t *testing.T) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
-		//{
-		//	name: "500 - Internal Server Error",
-		//	body: gin.H{
-		//		"password": user.HashedPassword,
-		//		"email":    user.Email,
-		//	},
-		//
-		//	checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-		//		require.Equal(t, http.StatusInternalServerError, recorder.Code)
-		//	},
-		//},
 		{
 			name: "400 - Duplicate Email",
 			body: gin.H{

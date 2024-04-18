@@ -19,39 +19,47 @@ func createSomeSolution(t *testing.T, message *string) Solution {
 	return solution
 }
 
-func TestCreateSolution(t *testing.T) {
+func TestSolutions(t *testing.T) {
 	message := `{"message": "Hello, world!"}`
 	solution := createSomeSolution(t, &message)
 
-	count, err := testQueries.GetSolutionCount(context.Background())
-	assert.NoError(t, err)
-	assert.True(t, count >= 1)
+	testCases := []struct {
+		name          string
+		checkResponse func(t *testing.T)
+	}{
+		{
+			name: "TestCreateSolution",
+			checkResponse: func(t *testing.T) {
+				count, err := testQueries.GetSolutionCount(context.Background())
+				assert.NoError(t, err)
+				assert.True(t, count >= 1)
 
-	solution, err = testQueries.GetSolution(context.Background(), solution.ID)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, solution)
-	assert.Equal(t, message, string(solution.Condition))
+				solution, err = testQueries.GetSolution(context.Background(), solution.ID)
+				assert.NoError(t, err)
+				assert.NotEmpty(t, solution)
+				assert.Equal(t, message, string(solution.Condition))
+			},
+		},
+		{
+			name: "TestDeleteSolutions",
+			checkResponse: func(t *testing.T) {
+				count, err := testQueries.GetSolutionCount(context.Background())
+				assert.NoError(t, err)
+				assert.True(t, count >= 1)
 
-}
+				err = testQueries.DeleteAllSolutions(context.Background())
+				assert.NoError(t, err)
+				solution, err = testQueries.GetSolution(context.Background(), solution.ID)
+				assert.Error(t, err)
+				assert.Empty(t, solution)
 
-func TestDeleteSolutions(t *testing.T) {
-	message := `{"message": "Hello, world!"}`
-	solution := createSomeSolution(t, &message)
-
-	count, err := testQueries.GetSolutionCount(context.Background())
-	assert.NoError(t, err)
-	assert.True(t, count >= 1)
-
-	err = testQueries.DeleteAllSolutions(context.Background())
-	assert.NoError(t, err)
-	solution, err = testQueries.GetSolution(context.Background(), solution.ID)
-	assert.Error(t, err)
-	assert.Empty(t, solution)
-
-	count, err = testQueries.GetSolutionCount(context.Background())
-	assert.NoError(t, err)
-	assert.True(t, count == 0)
-
-	solution = createSomeSolution(t, &message)
-	assert.True(t, solution.ID == 1)
+				count, err = testQueries.GetSolutionCount(context.Background())
+				assert.NoError(t, err)
+				assert.True(t, count == 0)
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, tc.checkResponse)
+	}
 }

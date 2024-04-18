@@ -1,6 +1,7 @@
 package token
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -41,8 +42,11 @@ func TestNewPayload(t *testing.T) {
 		t.Errorf("Expected email %s, got %s", email, payload.Email)
 	}
 	now := time.Now()
-	if payload.IssuedAt.After(now) || payload.ExpiredAt.Before(now.Add(duration)) {
-		t.Errorf("Invalid payload timestamps, issued at: %v, expired at: %v", payload.IssuedAt, payload.ExpiredAt)
-	}
+
+	require.WithinDurationf(t, payload.IssuedAt, now, time.Second, "Invalid creation payload timestamps, issued at: %v, now: %v", payload.IssuedAt, now)
+
+	expectedExpiredAt := now.Add(duration)
+
+	require.WithinDurationf(t, payload.ExpiredAt, expectedExpiredAt, time.Second, "Invalid expire payload timestamps, expired at: %v, expected: %v", payload.ExpiredAt, expectedExpiredAt)
 
 }
